@@ -3,7 +3,7 @@
 import os
 import sys
 
-from PyPDF2 import PdfReader, PdfFileWriter
+from PyPDF2 import PdfFileReader, PdfFileWriter
 
 from .core import TableList
 from .parsers import Stream, Lattice
@@ -70,8 +70,8 @@ class PDFHandler(object):
         if pages == "1":
             page_numbers.append({"start": 1, "end": 1})
         else:
-            infile = PdfReader(open(filepath, "rb"), strict=False)
-            if infile.is_encrypted:
+            infile = PdfFileReader(open(filepath, "rb"), strict=False)
+            if infile.isEncrypted:
                 infile.decrypt(self.password)
             if pages == "all":
                 page_numbers.append({"start": 1, "end": infile.getNumPages()})
@@ -103,12 +103,12 @@ class PDFHandler(object):
 
         """
         with open(filepath, "rb") as fileobj:
-            infile = PdfReader(fileobj, strict=False)
-            if infile.is_encrypted:
+            infile = PdfFileReader(fileobj, strict=False)
+            if infile.isEncrypted:
                 infile.decrypt(self.password)
             fpath = os.path.join(temp, "page-{0}.pdf".format(page))
             froot, fext = os.path.splitext(fpath)
-            p = infile.pages(page - 1)
+            p = infile.getPage(page - 1)
             outfile = PdfFileWriter()
             outfile.addPage(p)
             with open(fpath, "wb") as f:
@@ -122,11 +122,11 @@ class PDFHandler(object):
             if rotation != "":
                 fpath_new = "".join([froot.replace("page", "p"), "_rotated", fext])
                 os.rename(fpath, fpath_new)
-                infile = PdfReader(open(fpath_new, "rb"), strict=False)
-                if infile.is_encrypted:
+                infile = PdfFileReader(open(fpath_new, "rb"), strict=False)
+                if infile.isEncrypted:
                     infile.decrypt(self.password)
                 outfile = PdfFileWriter()
-                p = infile.pages(0)
+                p = infile.getPage(0)
                 if rotation == "anticlockwise":
                     p.rotateClockwise(90)
                 elif rotation == "clockwise":
